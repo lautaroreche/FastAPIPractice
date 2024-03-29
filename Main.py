@@ -1,31 +1,28 @@
 # Documentation with Swagger: http://127.0.0.1:8000/docs
 # Documentation with Redocly: http://127.0.0.1:8000/redoc
+
 from fastapi import FastAPI, Body
+from pydantic import BaseModel
+from typing import Union
+
+class User(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+
+class UserToDelete(BaseModel):
+    id: int
 
 app = FastAPI()
-
-users = [
-    {
-        'id': 1,
-        'first_name': 'First',
-        'last_name': 'User'
-    },
-    {
-        'id': 2,
-        'first_name': 'Second',
-        'last_name': 'User'
-    }
-]
-
+users = []
 
 @app.get('/users')
-def get_users():
+def get_users() -> list[User]:
     return users
-
 
 # Search user by query
 @app.get('/users/')
-def get_users_query(id: int = None, first_name: str = None, last_name: str = None):
+def get_users_query(id: int = None, first_name: str = None, last_name: str = None) -> Union[list[User], User, dict]:
     filtered_users = []
     if id is None and first_name is None and last_name is None:
         return users
@@ -38,45 +35,35 @@ def get_users_query(id: int = None, first_name: str = None, last_name: str = Non
         return filtered_users[0]
     return {'message': 'User not found'}
 
-
 # Search user indicating id
 @app.get('/users/{id}')
-def get_users_indicate_id(id: int):
+def get_users_indicate_id(id: int) -> Union[User, dict]:
     for user in users:
         if user['id'] == id:
             return user
     return {'message': 'User not found'}
 
-
 @app.post('/users')
-def create_user(id: int = Body(), first_name: str = Body(), last_name: str = Body()):
-    users.append({
-        'id': id,
-        'first_name': first_name,
-        'last_name': last_name
-    })
+def create_user(user_obj: User) -> dict:
+    users.append(user_obj.model_dump())
     return {'message': 'User created successfully'}
 
-
-@app.put('/users/{id}')
-def update_user(id: int, first_name: str = Body(), last_name: str = Body()):
+@app.put('/users')
+def update_user(user_obj: User)  -> dict:
     for user in users:
-        if user['id'] == id:
-            user['first_name'] = first_name
-            user['last_name'] = last_name
+        if user['id'] == user_obj.id:
+            user['first_name'] = user_obj.first_name
+            user['last_name'] = user_obj.last_name
             return {'message': 'User modified successfully'}
     return {'message': 'User not found'}
 
-
-@app.delete('/users/{id}')
-def delete_user(id: int):
+@app.delete('/users')
+def delete_user(user_obj: UserToDelete)  -> dict:
     for user in users:
-        if user['id'] == id:
+        if user['id'] == user_obj.id:
             users.remove(user)
             return {'message': 'User deleted successfully'}
     return {'message': 'User not found'}
 
-
-# Ejecutar desde terminal: uvicorn prueba:app --reload
+# Ejecutar desde terminal: uvicorn Main:app --reload
 # Consultar en navegador: http://127.0.0.1:8000/users
-    
