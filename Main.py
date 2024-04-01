@@ -1,9 +1,11 @@
 # Documentation with Swagger: http://127.0.0.1:8000/docs
 # Documentation with Redocly: http://127.0.0.1:8000/redoc
 
+
 from fastapi import FastAPI, Body
 from pydantic import BaseModel
 from typing import Union
+
 
 class User(BaseModel):
     id: int
@@ -13,12 +15,15 @@ class User(BaseModel):
 class UserToDelete(BaseModel):
     id: int
 
+
 app = FastAPI()
 users = []
+
 
 @app.get('/users')
 def get_users() -> list[User]:
     return users
+
 
 # Search user by query
 @app.get('/users/')
@@ -35,6 +40,7 @@ def get_users_query(id: int = None, first_name: str = None, last_name: str = Non
         return filtered_users[0]
     return {'message': 'User not found'}
 
+
 # Search user indicating id
 @app.get('/users/{id}')
 def get_users_indicate_id(id: int) -> Union[User, dict]:
@@ -43,10 +49,12 @@ def get_users_indicate_id(id: int) -> Union[User, dict]:
             return user
     return {'message': 'User not found'}
 
+
 @app.post('/users')
 def create_user(user_obj: User) -> dict:
     users.append(user_obj.model_dump())
     return {'message': 'User created successfully'}
+
 
 @app.put('/users')
 def update_user(user_obj: User)  -> dict:
@@ -57,6 +65,7 @@ def update_user(user_obj: User)  -> dict:
             return {'message': 'User modified successfully'}
     return {'message': 'User not found'}
 
+
 @app.delete('/users')
 def delete_user(user_obj: UserToDelete)  -> dict:
     for user in users:
@@ -65,5 +74,6 @@ def delete_user(user_obj: UserToDelete)  -> dict:
             return {'message': 'User deleted successfully'}
     return {'message': 'User not found'}
 
-# Ejecutar desde terminal: uvicorn Main:app --reload
-# Consultar en navegador: http://127.0.0.1:8000/users
+
+# Run from terminal: uvicorn fastAPI:app --reload
+# Consult in browser: http://127.0.0.1:8000/users
